@@ -27,9 +27,9 @@ with con:
             """CREATE TABLE IF NOT EXISTS cities
             (
                 city_id INT PRIMARY KEY AUTO_INCREMENT,
-                city_name VARCHAR(50),
-                city_lat DOUBLE,
-                city_lon DOUBLE
+                city_name VARCHAR(50) NOT NULL,
+                city_lat DOUBLE NOT NULL,
+                city_lon DOUBLE NOT NULL
             )"""
             )
     # Add cities
