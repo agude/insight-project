@@ -99,7 +99,7 @@ def get_map(city_id, box_size = 0.6, con=con):
     return my_map
 
 
-def get_all_photos(city_id, radius=25, con=con):
+def get_all_photos(city_id, radius=15, con=con):
     # Coordinates of the city to measure radius from
     city_center = city_coordinate(city_id, con)
 
@@ -123,7 +123,7 @@ def get_all_photos(city_id, radius=25, con=con):
         return np.array(coords)
 
 
-def get_photos_from_tags(tags, city_id, radius=25, con=con):
+def get_photos_from_tags(tags, city_id, radius=15, con=con):
     """ Returns a list of (views, lat, lon) tuples that contain one of a list
     of tags. """
     # Coordinates of the city to measure radius from
@@ -176,14 +176,14 @@ def get_tags_to_run_on(city_id, graph_tags):
         cur = con.cursor()
 
         # Get all tags
-        SELECT = """SELECT tag 
+        SELECT = """SELECT tag
                 FROM tags t"""
         cur.execute(SELECT)
         rows = cur.fetchall()
         all_tags = set([tag for tag, in rows if tag in graph_tags])
 
         # Get the tags we have already filled
-        SELECT = """SELECT t.tag 
+        SELECT = """SELECT t.tag
                 FROM tags t
                 INNER JOIN results r ON t.tag_id = r.tag_id
                 WHERE r.city_id = {city_id}""".format(
