@@ -65,6 +65,23 @@ def make_normalized_kde(photo_kde, all_kde):
     return normalized_kde
 
 
+def hand_coded_seed_points(base_map):
+    lat_lons = [
+            (37.78561, -122.40774), # Downtown SF
+            (37.76824, -122.48156), # Golden Gate Park
+            (37.79850, -122.46748), # Persidio
+            (37.83308, -122.48945), # Marin Headlands
+            (37.86073, -122.42954), # Angel Island
+            (37.82641, -122.42251), # Alcatraz
+            (37.82444, -122.37174), # Treasure Island
+            (37.80396, -122.25865), # Lake Merit
+            (37.87175, -122.26123), # UC Berkeley
+            ]
+    x, y = zip(*[base_map(lon, lat) for (lat, lon) in lat_lons])
+
+    return x, y
+
+
 def write_result(tag, coord, city_id):
     DB_NAME = 'flickr_data'
     con = mdb.connect(
@@ -245,7 +262,8 @@ def find_best_location(tag, city_id, tag_graph, base_map, all_kde):
     #start = t()
 
     # Cluster the points to seed minimiation
-    cluster_points = get_fit_starts(good_photo_locations)
+    #cluster_points = get_fit_starts(good_photo_locations)
+    cluster_points = hand_coded_seed_points(base_map)
 
     #print "Done clustering in", t() - start, "seconds"
     #start = t()
