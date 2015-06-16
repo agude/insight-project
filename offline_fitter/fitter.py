@@ -5,6 +5,10 @@ import multiprocessing as mp
 from best_position import find_best_location
 import helpers
 import numpy as np
+from os.path import isfile
+from os import remove
+from numpy.linalg import LinAlgError
+
 
 # Hardcode the city
 CITY_ID = 1
@@ -38,14 +42,26 @@ all_kde = helpers.get_xy_kde(selected_photo_coords)
 
 # Dummy function to pass multiple parameters through pool.map
 def dummy(tag):
+    # Check for the lock file
+    lock_file = "/tmp/{tag}.lock".format(tag=tag)
+    if isfile(lock_file):
+        return
+
+    # Open lock file and do work
+    open(lock_file, 'a').close()
+
     print "Working on tag:", tag
-    find_best_location(tag, CITY_ID, tag_graph, base_map, all_kde)
-    print "Done with tag:", tag
+    try:
+        find_best_location(tag, CITY_ID, tag_graph, base_map, all_kde)
+    except LinAlgError:
+        print "FAILED on", tag
+    else:
+        print "Done with tag:", tag
+    finally:
+        remove(lock_file)
 
 for tag in tags_to_run_on:
     dummy(tag)
-    import sys
-    sys.exit()
 
 # Set up the arguments to pass to the script
 #tags = tags_to_run_on
