@@ -54,13 +54,18 @@ def get_similar_good_photo_locations(tag, city_id, tag_graph, distance_cutoff=5,
         and float(len(saved_coords)) / len(views_and_coords) > 0.1:
             break
 
-    #print "Best photos len:", len(saved_coords), saved_coords
     return saved_coords
 
 
-def make_normalized_kde(photo_kde, all_kde):
+def make_normalized_kde(photo_kde, all_kde, base_map):
     def normalized_kde(coord):
-        return -np.true_divide(photo_kde(coord), all_kde(coord))
+        value = -np.true_divide(photo_kde(coord), all_kde(coord))
+        try:
+            adjustment = abs(value) * 5 * (not bool(base_map.is_land(coord[0], coord[1])))
+        except TypeError:
+            adjustment = np.array([(5 * (not bool(base_map.is_land(x, y)))) for (x, y) in zip(coord[0], coord[1])])
+
+        return value + adjustment
 
     return normalized_kde
 
@@ -233,6 +238,7 @@ def save_plot(base_map, tag, photo_locations, best_coord, cluster_points=None, h
 
     output_name = "fit_plots/{tag}.png".format(tag=tag)
     plt.savefig(output_name, bbox_inches='tight')
+    plt.close('all')
 
 
 def find_best_location(tag, city_id, tag_graph, base_map, all_kde):
@@ -256,7 +262,7 @@ def find_best_location(tag, city_id, tag_graph, base_map, all_kde):
     # Set up a KDE of the good photos
     if len(good_photo_locations) > 1:
         photo_kde = helpers.get_xy_kde(good_photo_locations)
-        normalized_kde = make_normalized_kde(photo_kde, all_kde)
+        normalized_kde = make_normalized_kde(photo_kde, all_kde, base_map)
     # If only one matching photo, that is the best location
     else:
         write_result(tag, good_photo_locations[0], city_id)
