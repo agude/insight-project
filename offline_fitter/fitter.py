@@ -4,6 +4,7 @@ import cPickle as pk
 import multiprocessing as mp
 from best_position import find_best_location
 import helpers
+import numpy as np
 
 # Hardcode the city
 CITY_ID = 1
@@ -24,10 +25,16 @@ base_map = helpers.get_map(CITY_ID)
 
 # Set up the all photo KDE
 photo_coords = helpers.get_all_photos(CITY_ID)
+selected_photo_coords = []
 for coord in photo_coords:
     coord.set_xy(base_map)
+    # Prune items in the ocean or bay
+    if base_map.is_land(coord.x, coord.y):
+        selected_photo_coords.append(coord)
 
-all_kde = helpers.get_xy_kde(photo_coords)
+selected_photo_coords = np.array(selected_photo_coords)
+
+all_kde = helpers.get_xy_kde(selected_photo_coords)
 
 # Dummy function to pass multiple parameters through pool.map
 def dummy(tag):

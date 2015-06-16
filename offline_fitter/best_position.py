@@ -245,9 +245,13 @@ def find_best_location(tag, city_id, tag_graph, base_map, all_kde):
         return
 
     # Get the nearby tags, and then the lats and lons from them
-    good_photo_locations = get_similar_good_photo_locations(tag, city_id, tag_graph)
-    for coord in good_photo_locations:
+    ok_photo_locations = get_similar_good_photo_locations(tag, city_id, tag_graph)
+    good_photo_locations = []
+    for coord in ok_photo_locations:
         coord.set_xy(base_map)
+        # Prune items in the ocean or bay
+        if base_map.is_land(coord.x, coord.y):
+            good_photo_locations.append(coord)
 
     # Set up a KDE of the good photos
     if len(good_photo_locations) > 1:
