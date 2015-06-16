@@ -17,6 +17,14 @@ con = mdb.connect(
         autocommit=True,
         )
 
+con_read = mdb.connect(
+        DB_INFO['host'],
+        DB_INFO['readonly_user'],
+        DB_INFO['password'],
+        DB_NAME,
+        autocommit=True,
+        )
+
 class Coordinate:
 
     def __init__(self, lat, lon):
@@ -123,7 +131,7 @@ def get_all_photos(city_id, radius=15, con=con):
         return np.array(coords)
 
 
-def get_photos_from_tags(tags, city_id, radius=15, con=con):
+def get_photos_from_tags(tags, city_id, radius=15, con=con_read):
     """ Returns a list of (views, lat, lon) tuples that contain one of a list
     of tags. """
     # Coordinates of the city to measure radius from
@@ -219,3 +227,22 @@ def get_tags_to_run_on(city_id, graph_tags):
         tags_to_run_on = [tag for _, tag in reversed(sorted(count_tag))]
 
         return tags_to_run_on
+
+
+def get_results_from_tag(tag, con=con_read):
+    with con:
+        cur = con.cursor()
+
+        # Get all tags
+        SELECT = """SELECT r.lat, r.lon, r.photo_id
+        FROM results r
+        LEFT JOIN tags t ON t.tag_id = r.tag_id
+        WHERE t.tag = %s;
+        """
+        cur.execute(SELECT, tag)
+        rows = cur.fetchall()
+        cur.close()
+        lat, lon, pid = rows[0]
+        coord = Coordinate(lat, lon)
+
+        return coord

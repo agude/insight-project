@@ -22,12 +22,8 @@
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
 
-    <!-- jQuery -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-
     <!-- Leaflet.js -->
     <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css"/>
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
   </head>
 
   <body>
@@ -53,44 +49,21 @@
       </div>
     </nav>
 
-<!--
-  <div class="container">
-    <div class="starter-template">
-        <h2>Output Page</h2>
-        <p>Enter some user input</p>
-    </div>
-
-    <div class = "container">
-      <form  action="/output" method="GET">
-        <div class="form-group">
-          <label for="ID">City  Name:</label>
-          <input type="text" id="ID" name='ID' placeholder="e.g. ">
-        </div>
-        <div>
-          <button type="submit" class="btn btn-default btn-lg">Find this city!</button>
-        </div>
-      </form>
-    </div>
-    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
-
-  </div>
--->
-
     <div class="container">
-      <div class="starter-template">
-        <h3>Results:</h3>
           <div id="map"></div>
-      </div>
+    </div>
 
-
-    </div><!-- /.container -->
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <!-- <script src="../../dist/js/bootstrap.min.js"></script> -->
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <!--<script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>-->
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <!-- Leaflet.js -->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
   </body>
 
   <!-- Map Code -->
@@ -98,50 +71,42 @@
     // Get the geocodes from Flask
     var best_lat = {{ best_lat }};
     var best_lon = {{ best_lon }};
-    var start_lat = {{ start_lat }};
-    var start_lon = {{ start_lon }};
 
-    var map = L.map('map').setView([37.7361172, -122.423565], 11);
+    //var map = L.map('map').setView([37.7361172, -122.423565], 11);
+    var map = L.map('map').setView([best_lat, best_lon], 12);
 
-    L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
-        maxZoom: 18,
+    // Website with examples: https://leaflet-extras.github.io/leaflet-providers/preview/
+    //L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    //    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+    //    maxZoom: 18,
+    //}).addTo(map);
+
+    var Stamen_TonerLite = L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png', {
+        attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        subdomains: 'abcd',
+        minZoom: 0,
+        maxZoom: 20,
+        ext: 'png'
     }).addTo(map);
+
+    //var Stamen_Watercolor = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.png', {
+    //    attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    //    subdomains: 'abcd',
+    //    minZoom: 1,
+    //    maxZoom: 16,
+    //    ext: 'png'
+    //}).addTo(map);
 
     // Add a circle around the best location
     var marker = L.marker([best_lat, best_lon]).addTo(map);
-    //map.panTo(new L.LatLng([best_lat, best_lon]));
-    //var circle = L.circle(
-    //    [best_lat, best_lon],
-    //    500, 
-    //    {
-    //        color: 'red',
-    //        fillColor: '#f03',
-    //        fillOpacity: 0.5
-    //    }
-    //).addTo(map);
-
-    // Start location of the minimizer
-    var circle = L.circle(
-        [start_lat, start_lon], 
-        500, 
-        {
-            color: 'red',
-            //fillColor: '#f03',
-            fillOpacity: 0.5
-        }
-    ).addTo(map);
 
     // Add all photos associated with the tag
     var all_points = {{ coords | safe }};
     var all_points_length = all_points.length;
     for (var i = 0; i < all_points_length; i++) {
-        //Do something
-        //var marker = L.marker(all_points[i]).addTo(map);
-
         var circle = L.circle(
-            all_points[i], 
-            50, 
+            all_points[i],
+            50,
             {
                 color: 'blue',
                 //fillColor: '#f03',
