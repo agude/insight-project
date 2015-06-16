@@ -21,9 +21,6 @@ NJOBS = int(mp.cpu_count())
 tag_graph = pk.load(open("../pickles/sf_tag_graph.pickle", "rb"))
 graph_tags = set(tag_graph.nodes())
 
-# Find tags to run over
-tags_to_run_on = helpers.get_tags_to_run_on(CITY_ID, graph_tags)
-
 # Set up the map
 base_map = helpers.get_map(CITY_ID)
 
@@ -60,6 +57,8 @@ def dummy(tag):
     finally:
         remove(lock_file)
 
+# Find tags to run over and do so
+tags_to_run_on = helpers.get_tags_to_run_on(CITY_ID, graph_tags)
 for tag in tags_to_run_on:
     dummy(tag)
 
