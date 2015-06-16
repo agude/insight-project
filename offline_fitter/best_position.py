@@ -118,12 +118,12 @@ def get_fit_starts(photo_locations):
         cluster.fit(X_for_cluster)
         cluster_x, cluster_y = zip(*cluster.cluster_centers_)
     else:
-        cluster_x, cluster_y = zip(X_for_cluster)
+        cluster_x, cluster_y = zip(*X_for_cluster)
 
     return cluster_x, cluster_y
 
 
-def find_the_minimum(photo_locations, normalized_kde, cluster_points):
+def find_the_minimum(photo_locations, normalized_kde, cluster_points, base_map):
     # Find the range of values to use for bounds
     X = np.array([coord.x for coord in photo_locations])
     Y = np.array([coord.y for coord in photo_locations])
@@ -155,17 +155,26 @@ def find_the_minimum(photo_locations, normalized_kde, cluster_points):
 
 
 def make_heat_map(photo_locations, normalized_kde):
-    X_POS, Y_POS = np.mgrid[xmin:xmax:100j, ymin:ymax:100j]
+    # Find the range of values to use for bounds
+    X = np.array([coord.x for coord in photo_locations])
+    Y = np.array([coord.y for coord in photo_locations])
+    xmin = X.min()
+    ymin = Y.min()
+    xmax = X.max()
+    ymax = Y.max()
+
+    # Make the grid to sample on
+    X_POS, Y_POS = np.mgrid[xmin:xmax:25j, ymin:ymax:25j]
     positions = np.vstack([X_POS.ravel(), Y_POS.ravel()])
     Z = np.reshape(normalized_kde(positions).T, X_POS.shape)
 
     return Z
 
-def save_plot(tag, photo_locations, best_coord, cluster_points=None, heat_map=None):
+def save_plot(base_map, tag, photo_locations, best_coord, cluster_points=None, heat_map=None):
 
     # Find the range of values to use for bounds
-    X = np.array([coord.x for coord in good_photo_locations])
-    Y = np.array([coord.y for coord in good_photo_locations])
+    X = np.array([coord.x for coord in photo_locations])
+    Y = np.array([coord.y for coord in photo_locations])
     xmin = X.min()
     ymin = Y.min()
     xmax = X.max()
@@ -186,8 +195,8 @@ def save_plot(tag, photo_locations, best_coord, cluster_points=None, heat_map=No
                 np.rot90(heat_map),
                 cmap=plt.get_cmap("OrRd_r"),
                 extent=[xmin, xmax, ymin, ymax],
-                vmax=abs(Z).max(),
-                vmin=-abs(Z).max(),
+                vmax=abs(heat_map).max(),
+                vmin=-abs(heat_map).max(),
                 )
 
     # Plot the data
@@ -195,9 +204,9 @@ def save_plot(tag, photo_locations, best_coord, cluster_points=None, heat_map=No
 
     # Plot the seed clusters
     if cluster_points is not None:
-        ax.plot(cluster[0], cluster[1], 'g^', markersize=3)
+        ax.plot(cluster_points[0], cluster_points[1], 'g^', markersize=3)
 
-    ax.plot(x_peak, y_peak, 'bo', markersize=5)
+    ax.plot(best_coord.x, best_coord.y, 'bo', markersize=5)
 
     # These values are from the all map for SF
     xs = (9280.2130129241632, 64886.100965711179)
@@ -230,7 +239,7 @@ def find_best_location(tag, city_id, tag_graph, base_map, all_kde):
     # If only one matching photo, that is the best location
     else:
         write_result(tag, good_photo_locations[0], city_id)
-        save_plot(tag, good_photo_locations, best_coord)
+        save_plot(base_map, tag, good_photo_locations, good_photo_locations[0])
 
     #print "Done getting photos in", t() - start, "seconds"
     #start = t()
@@ -252,4 +261,7 @@ def find_best_location(tag, city_id, tag_graph, base_map, all_kde):
 
     # Plot the results
     heat_map = make_heat_map(good_photo_locations, normalized_kde)
-    save_plot(tag, good_photo_locations, best_coord, cluster_points, heat_map)
+    save_plot(base_map, tag, good_photo_locations, best_coord, cluster_points, heat_map)
+
+    #print "Done with plotting in", t() - start, "seconds"
+    #start = t()
