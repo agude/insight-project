@@ -169,3 +169,53 @@ def get_xy_kde(photo_coords):
     # Make a grid to sample on
     values = np.vstack([X, Y])
     return stats.gaussian_kde(values, bw_method=0.2)
+
+
+def get_tags_to_run_on(city_id, graph_tags):
+    with con:
+        cur = con.cursor()
+
+        # Get all tags
+        SELECT = """SELECT tag 
+                FROM tags t"""
+        cur.execute(SELECT)
+        rows = cur.fetchall()
+        all_tags = set([tag for tag, in rows if tag in graph_tags])
+
+        # Get the tags we have already filled
+        SELECT = """SELECT t.tag 
+                FROM tags t
+                INNER JOIN results r ON t.tag_id = r.tag_id
+                WHERE r.city_id = {city_id}""".format(
+                        city_id=city_id,
+                        )
+        cur.execute(SELECT)
+        rows = cur.fetchall()
+        done_tags = set([tag for tag, in rows])
+
+        # Tags to consider
+        tags_to_consider = all_tags - done_tags
+
+        # Find the most popular tags
+        count_tag = []
+        for tag in tags_to_consider:
+            SELECT = """SELECT COUNT(pt.photo_id)
+                    FROM photo_tags pt
+                    INNER JOIN tags t ON pt.tag_id = t.tag_id
+                    INNER JOIN photos p on pt.photo_id = p.photo_id
+                    WHERE p.city_id = {city_id}
+                    AND t.tag = '{tag}'""".format(
+                            city_id=city_id,
+                            tag=tag,
+                            )
+            cur.execute(SELECT)
+            rows = cur.fetchall()
+            count = rows[0][0]
+            count_tag.append((count, tag))
+
+        cur.close()
+
+        # Sort the tags from most to least common
+        tags_to_run_on = [tag for _, tag in reversed(sorted(count_tag))]
+
+        return tags_to_run_on
