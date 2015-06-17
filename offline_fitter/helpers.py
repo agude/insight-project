@@ -130,6 +130,20 @@ def get_all_photos(city_id, radius=15, con=con):
 
         return np.array(coords)
 
+def get_related_tags(tag, con=con_read):
+    with con:
+        cur = con.cursor()
+        SELECT = """SELECT daughter.tag
+        FROM tag_graph tg
+        LEFT JOIN tags parent ON tg.tag_id = parent.tag_id
+        LEFT JOIN tags daughter ON tg.related_tag = daughter.tag_id
+        WHERE parent.tag = %s
+        AND tg.distance <= 5;
+        """
+        cur.execute(SELECT, tag)
+        rows = cur.fetchall()
+        return [tag for (tag,) in rows]
+
 
 def get_photos_from_tags(tags, city_id, radius=15, con=con_read):
     """ Returns a list of (views, lat, lon) tuples that contain one of a list

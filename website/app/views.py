@@ -35,9 +35,15 @@ def cities_output():
     photo_coords = helpers.get_photos_from_tags((clean_tag,), CITY_ID)
     leaflet_coords = [(coord.lat, coord.lon) for (views, coord) in photo_coords]
 
+    # Get related tags
+    related_tags = helpers.get_related_tags(clean_tag)
+    related_photo_coords = helpers.get_photos_from_tags(related_tags, CITY_ID)
+    related_leaflet_coords = [(coord.lat, coord.lon) for (views, coord) in related_photo_coords]
+
     # Render the page
     return render_template("output.html",
             best_lon = best_coord.lon,
             best_lat = best_coord.lat,
-            coords = json.dumps(list(leaflet_coords))
+            tag_coords = json.dumps(list(leaflet_coords)),
+            related_coords = json.dumps(list(related_leaflet_coords)),
             )
