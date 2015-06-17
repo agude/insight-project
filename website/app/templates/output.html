@@ -23,7 +23,7 @@
     <![endif]-->
 
     <!-- Leaflet.js -->
-    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='leaflet/leaflet.css') }}"/>
   </head>
 
   <body>
@@ -61,9 +61,9 @@
     <!--<script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>-->
 
     <!-- jQuery -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
     <!-- Leaflet.js -->
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
+    <script src="{{ url_for('static', filename='leaflet/leaflet.js') }}"></script>
   </body>
 
   <!-- Map Code -->
@@ -72,7 +72,6 @@
     var best_lat = {{ best_lat }};
     var best_lon = {{ best_lon }};
 
-    //var map = L.map('map').setView([37.7361172, -122.423565], 11);
     var map = L.map('map').setView([best_lat, best_lon], 12);
 
     // Website with examples: https://leaflet-extras.github.io/leaflet-providers/preview/
@@ -97,10 +96,10 @@
     //    ext: 'png'
     //}).addTo(map);
 
-    // Add a circle around the best location
+    // Add a marker for the best location
     var marker = L.marker([best_lat, best_lon]).addTo(map);
 
-    // Add all photos associated with the tag
+    // Add all photos of the tag
     var all_points = {{ coords | safe }};
     var all_points_length = all_points.length;
     for (var i = 0; i < all_points_length; i++) {
