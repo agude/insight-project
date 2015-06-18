@@ -24,6 +24,8 @@
 
     <!-- Leaflet.js -->
     <link rel="stylesheet" href="{{ url_for('static', filename='leaflet/leaflet.css') }}"/>
+    <!-- Custom styles for leaflet -->
+    <link href="{{ url_for('static', filename='css/map.css') }}" rel="stylesheet">
   </head>
 
   <body>
@@ -103,8 +105,9 @@
     var related_points = {{ related_coords | safe }};
     var related_points_length = related_points.length;
     for (var i = 0; i < related_points_length; i++) {
+        var datum = related_points[i];
         var circle = L.circle(
-            related_points[i],
+            [datum['lat'], datum['lon']],
             50,
             {
                 color: 'red',
@@ -112,14 +115,19 @@
                 fillOpacity: 0.5
             }
         ).addTo(map);
+        circle.bindPopup(
+                "<a>\n<img src=" + datum['url'] + "/></a>",
+                {maxWidth: 350}
+                );
     }
 
     // Add all photos of the tag
     var tag_points = {{ tag_coords | safe }};
     var tag_points_length = tag_points.length;
     for (var i = 0; i < tag_points_length; i++) {
+        var datum = tag_points[i];
         var circle = L.circle(
-            tag_points[i],
+            [datum['lat'], datum['lon']],
             50,
             {
                 color: 'blue',
@@ -127,6 +135,13 @@
                 fillOpacity: 0.5
             }
         ).addTo(map);
+        circle.bindPopup(
+                "<a>\n<img src=" + datum['url'] + "/></a>",
+                {maxWidth: 350}
+                );
+        //popup.leaflet-popup-content {
+            //width:auto !important;
+        //};
     }
   </script>
 
