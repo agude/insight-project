@@ -16,7 +16,6 @@ def index():
        )
 
 @app.route('/')
-@app.route('/input')
 def cities_input():
   return render_template("input.html")
 
