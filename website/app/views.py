@@ -5,17 +5,9 @@ import helpers
 import json
 
 CITY_ID = 1 # 1 is SF
-SF_LAT = 37.7361172
-SF_LON = -122.423565
-
-@app.route('/index')
-def index():
-    return render_template("index.html",
-       title = 'Home',
-       output = str("Loaded in: %i seconds" %(t() - GLOBAL['START_TIME'])),
-       )
 
 @app.route('/')
+@app.route('/index')
 def cities_input():
   return render_template("input.html")
 
@@ -23,6 +15,8 @@ def cities_input():
 def cities_output():
     #pull 'ID' from input field and store it
     tag = request.args.get('ID')
+    if tag is None:
+        tag = 'goldengate'
 
     # Clean up the tag
     clean_tag = tag.strip().lower().replace(' ', '')
