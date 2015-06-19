@@ -77,11 +77,6 @@
     var map = L.map('map').setView([best_lat, best_lon], 12);
 
     // Website with examples: https://leaflet-extras.github.io/leaflet-providers/preview/
-    //L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    //    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
-    //    maxZoom: 18,
-    //}).addTo(map);
-
     var Stamen_TonerLite = L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png', {
         attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         subdomains: 'abcd',
@@ -89,14 +84,6 @@
         maxZoom: 20,
         ext: 'png'
     }).addTo(map);
-
-    //var Stamen_Watercolor = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.png', {
-    //    attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    //    subdomains: 'abcd',
-    //    minZoom: 1,
-    //    maxZoom: 16,
-    //    ext: 'png'
-    //}).addTo(map);
 
     // Add a marker for the best location
     var marker = L.marker([best_lat, best_lon]).addTo(map);
@@ -139,9 +126,6 @@
                 "<a>\n<img src=" + datum['url'] + "/></a>",
                 {maxWidth: 350}
                 );
-        //popup.leaflet-popup-content {
-            //width:auto !important;
-        //};
     }
   </script>
 
