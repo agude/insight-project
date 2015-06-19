@@ -32,12 +32,33 @@
         <div class="text-vertical-center">
             <h1>WhereTo.Photo</h1>
             <h3>What do you want to see today?</h3>
-          <form class="navbar-form" _lpchecked="1" action="/output" method="GET">
-            <input type="submit" id="input_submit" style="visibility: hidden; position: absolute; left: -100px; width: 1px; height: 1px;" />
-            <input type="text" id="ID" name="ID" class="form-control" placeholder="Golden Gate Bridge" >
-          </form>
+            <br>
+            <form class="navbar-form" _lpchecked="1" action="/output" method="GET">
+                <input type="submit" id="input_submit" style="visibility: hidden; position: absolute; left: -100px; width: 1px; height: 1px;" />
+                <input type="text" id="ID" name="ID" class="form-control" placeholder="Golden Gate Bridge" >
+            </form>
+            <br>
+            <br>
+            <h3>Not Sure? Try one of these topics!</h3>
+            <table class="captions" width="500" border="1" cellpadding="5">
+                <tr>
+                    <td align="center" valign="center">
+                        <a href="/output?ID=goldengate"><h4>Golden Gate</h4></a>
+                    </td>
+                    <td align="center" valign="center">
+                        <a href="/output?ID=flowers"><h4>Flowers</h4></a>
+                    </td>
+                </tr>
+            </table>
         </div>
     </header>
+    <!-- Photo Attribution -->
+    <div class="attribution-text" style="position: absolute; bottom: 0; right: 0; text-align:right;">
+        <a href="https://www.flickr.com/photos/thomashawk/10936924134/in/photolist-hEsAvu-9cdh3R-dMVggX-dgscG7-e3dK6B-dKoXtX-6E4sqW-bnkbty-bk1Z4Q-7KDNxf-aN7WZT-834gGN-fpe9K-c4c9pj-bD8Tiz-bgPVLH-8Rm5EV-byr9mi-8RVzwr-bzhzUe-pJ4S5r-bTpfTp-bTA7Ut-fJToJQ-kgEaAR-4rmwTQ-6t4y9-kcHSS5-kiodKq-rdtgTA-jowgvj-nusGev-iqpfWw-ouRz8G-iQ8pKS-bELKgE-9kSBvS-h8rn9Q-e1f7wq-e99RBL-iw5K1D-fyy75o-fr8TXN-ewwJxU-dV4wxW-jDe665-kycGzp-hnVwFK-e7W7Vt-de9kGy">Photo</a> 
+        by 
+        <a href="https://www.flickr.com/photos/thomashawk/">Thomas Hawk</a> 
+        <a href="https://creativecommons.org/licenses/by-nc/2.0/">(CC BY-NC 2.0)</a>
+    </div>
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
