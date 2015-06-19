@@ -56,8 +56,13 @@ def cities_output():
         if photo_id not in seen_photos:
             related_leaflet_coords.append(datum)
 
+    # Set the page title string
+    title = tag.capitalize()
+    print title
+
     # Render the page
     return render_template("output.html",
+            title = title,
             best_lon = best_coord.lon,
             best_lat = best_coord.lat,
             related_coords = json.dumps(list(related_leaflet_coords)),
