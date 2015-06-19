@@ -1,7 +1,15 @@
-#map { 
-    height: 600px;
+#map {
+    /* This makes the map fill all the space */
+    position: absolute;
+    top: 50px; /* The size of the top menu */
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
 
 .leaflet-popup-content {
     width:auto !important;
+}
+
+#map {
 }
