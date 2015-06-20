@@ -1,13 +1,13 @@
 #!/home/agude/bin/anaconda/bin/python
 
-import cPickle as pk
-import multiprocessing as mp
 from best_position import find_best_location
-import helpers
-import numpy as np
-from os.path import isfile
-from os import remove
 from numpy.linalg import LinAlgError
+from os import remove
+from os.path import isfile
+import cPickle as pk
+import helpers
+import multiprocessing as mp
+import numpy as np
 
 
 # Hardcode the city

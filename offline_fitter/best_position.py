@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import pymysql as mdb
+from pymysql.err import ProgrammingError
 
 
 def get_tag_status(tag, city_id):
@@ -48,7 +49,8 @@ def get_similar_good_photo_locations(tag, city_id, tag_graph, distance_cutoff=5,
     views_and_coords = sorted(helpers.get_photos_from_tags(tags, city_id))
     saved_coords = []
 
-    for view, coord in reversed(views_and_coords):
+    # Save the top 20, or 10% of photos, whichever is larger
+    for views, photo_id, url, coord in reversed(views_and_coords):
         saved_coords.append(coord)
         if len(saved_coords) >= 20 \
         and float(len(saved_coords)) / len(views_and_coords) > 0.1:
@@ -111,19 +113,36 @@ def write_result(tag, coord, city_id):
 
     # If the tag is in the results table already, do nothing
     with con:
-        cur = con.cursor()
-        INSERT = """INSERT INTO results
-        (tag_id, city_id, photo_id, lat, lon)
-        VALUES
-        ({tag_id}, {city_id}, {photo_id}, {lat}, {lon})
-        """.format(
-                tag_id=tag_id,
-                city_id=city_id,
-                photo_id = 0,
-                lat = coord.lat,
-                lon = coord.lon,
-                )
-        cur.execute(INSERT)
+        if coord.lat is not None and coord.lon is not None:
+            cur = con.cursor()
+            INSERT = """INSERT INTO results
+            (tag_id, city_id, photo_id, lat, lon)
+            VALUES
+            ({tag_id},{city_id},{lat},{lon});
+            """.format(
+                    tag_id=tag_id,
+                    city_id=city_id,
+                    lat=coord.lat,
+                    lon=coord.lon,
+                    )
+        else:
+            INSERT = """INSERT INTO results
+            (tag_id, city_id, photo_id, lat, lon)
+            VALUES
+            ({tag_id},{city_id},NULL,NULL);
+            """.format(
+                    tag_id=tag_id,
+                    city_id=city_id,
+                    lat=coord.lat,
+                    lon=coord.lon,
+                    )
+
+        try:
+            cur.execute(INSERT)
+        except ProgrammingError:
+            print "FAILED TO INSERT"
+            print INSERT
+            return
 
     cur.close()
     con.close()
@@ -195,6 +214,9 @@ def make_heat_map(photo_locations, normalized_kde):
 def save_plot(base_map, tag, photo_locations, best_coord, cluster_points=None, heat_map=None):
 
     # Find the range of values to use for bounds
+    for coord in photo_locations:
+        coord.set_xy(base_map)
+    best_coord.set_xy(base_map)
     X = np.array([coord.x for coord in photo_locations])
     Y = np.array([coord.y for coord in photo_locations])
     xmin = X.min()
@@ -252,21 +274,33 @@ def find_best_location(tag, city_id, tag_graph, base_map, all_kde):
 
     # Get the nearby tags, and then the lats and lons from them
     ok_photo_locations = get_similar_good_photo_locations(tag, city_id, tag_graph)
-    good_photo_locations = []
-    for coord in ok_photo_locations:
-        coord.set_xy(base_map)
-        # Prune items in the ocean or bay
-        if base_map.is_land(coord.x, coord.y):
-            good_photo_locations.append(coord)
+    if len(ok_photo_locations) <= 0:
+        null_coord = helpers.Coordinate(None, None)
+        write_result(tag, null_coord, city_id)
+        return
+    if len(ok_photo_locations) == 1:
+        good_photo_locations = ok_photo_locations
+    else:
+        good_photo_locations = []
+        for coord in ok_photo_locations:
+            coord.set_xy(base_map)
+            # Prune items in the ocean or bay
+            if base_map.is_land(coord.x, coord.y):
+                good_photo_locations.append(coord)
 
     # Set up a KDE of the good photos
-    if len(good_photo_locations) > 1:
-        photo_kde = helpers.get_xy_kde(good_photo_locations)
-        normalized_kde = make_normalized_kde(photo_kde, all_kde, base_map)
+    if len(good_photo_locations) <= 0:
+        null_coord = helpers.Coordinate(None, None)
+        write_result(tag, null_coord, city_id)
+        return
     # If only one matching photo, that is the best location
-    else:
+    elif len(good_photo_locations) == 1:
         write_result(tag, good_photo_locations[0], city_id)
         save_plot(base_map, tag, good_photo_locations, good_photo_locations[0])
+        return
+    else: 
+        photo_kde = helpers.get_xy_kde(good_photo_locations)
+        normalized_kde = make_normalized_kde(photo_kde, all_kde, base_map)
 
     #print "Done getting photos in", t() - start, "seconds"
     #start = t()

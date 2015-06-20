@@ -155,7 +155,7 @@ def get_photos_from_tags(tags, city_id, radius=15, con=con_read):
         cur = con.cursor()
         str_tags = [tag for tag in tags]
         TAGS = "('" + "','".join(str_tags) + "')"
-        SELECT = """SELECT p.photo_id, p.views, p.lat, p.lon
+        SELECT = """SELECT p.photo_id, url, p.views, p.lat, p.lon
         FROM photo_tags pt, photos p, tags t
         WHERE p.city_id = {city_id}
         AND pt.photo_id = p.photo_id
@@ -170,7 +170,7 @@ def get_photos_from_tags(tags, city_id, radius=15, con=con_read):
 
         # Select photos within some distance of the city
         seen_ids = []
-        for photo_id, views, lat, lon in cur:
+        for photo_id, url, views, lat, lon in cur:
             # Remove redundant photos
             if photo_id in seen_ids:
                 continue
@@ -178,7 +178,7 @@ def get_photos_from_tags(tags, city_id, radius=15, con=con_read):
             # Set up a tuple of coordinates and views
             coord = Coordinate(lat, lon)
             if city_center.distance_to(coord) <= radius:
-                output.append((views, coord))
+                output.append((views, photo_id, url, coord))
         cur.close()
 
         return output
@@ -260,3 +260,18 @@ def get_results_from_tag(tag, con=con_read):
         coord = Coordinate(lat, lon)
 
         return coord
+
+def get_tags_from_results(city_id, con=con_read):
+    with con:
+        cur = con.cursor()
+
+        # Get all tags
+        SELECT = """SELECT t.tag, r.city_id, r.photo_id, r.lat, r.lon
+        FROM results r
+        LEFT JOIN tags t ON r.tag_id = t.tag_id
+        WHERE r.city_id = %s;
+        """
+        cur.execute(SELECT, city_id)
+        rows = cur.fetchall()
+        cur.close()
+        return rows
