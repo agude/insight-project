@@ -207,7 +207,7 @@ def get_tags_to_run_on(city_id, graph_tags):
         # Get the tags we have already filled
         SELECT = """SELECT t.tag
                 FROM tags t
-                INNER JOIN results r ON t.tag_id = r.tag_id
+                INNER JOIN results_nonorm r ON t.tag_id = r.tag_id
                 WHERE r.city_id = {city_id}""".format(
                         city_id=city_id,
                         )

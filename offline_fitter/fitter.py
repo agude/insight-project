@@ -24,19 +24,6 @@ graph_tags = set(tag_graph.nodes())
 # Set up the map
 base_map = helpers.get_map(CITY_ID)
 
-# Set up the all photo KDE
-photo_coords = helpers.get_all_photos(CITY_ID)
-selected_photo_coords = []
-for coord in photo_coords:
-    coord.set_xy(base_map)
-    # Prune items in the ocean or bay
-    if base_map.is_land(coord.x, coord.y):
-        selected_photo_coords.append(coord)
-
-selected_photo_coords = np.array(selected_photo_coords)
-
-all_kde = helpers.get_xy_kde(selected_photo_coords)
-
 # Dummy function to pass multiple parameters through pool.map
 def dummy(tag):
     # Check for the lock file
@@ -49,7 +36,7 @@ def dummy(tag):
 
     print "Working on tag:", tag
     try:
-        find_best_location(tag, CITY_ID, tag_graph, base_map, all_kde)
+        find_best_location(tag, CITY_ID, tag_graph, base_map)
     except LinAlgError:
         print "FAILED on", tag
     else:
