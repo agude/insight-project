@@ -25,7 +25,7 @@ def get_tag_status(tag, city_id):
         cur = con.cursor()
         SELECT = """SELECT count(*)
         AS tag_count
-        FROM tags t, results_nonorm r
+        FROM tags t, results r
         WHERE t.tag = '{tag}'
         AND r.tag_id = t.tag_id
         AND r.city_id = {city}""".format(
@@ -59,9 +59,9 @@ def get_similar_good_photo_locations(tag, city_id, tag_graph, distance_cutoff=5,
     return saved_coords
 
 
-def make_normalized_kde(photo_kde, base_map):
+def make_normalized_kde(photo_kde, all_kde, base_map):
     def normalized_kde(coord):
-        value = -photo_kde(coord)
+        value = -np.true_divide(photo_kde(coord), all_kde(coord))
         try:
             adjustment = abs(value) * 5 * (not bool(base_map.is_land(coord[0], coord[1])))
         except TypeError:
@@ -83,7 +83,6 @@ def hand_coded_seed_points(base_map):
             (37.82444, -122.37174), # Treasure Island
             (37.80396, -122.25865), # Lake Merit
             (37.87175, -122.26123), # UC Berkeley
-            (37.88709, -122.45941), # Tiburon
             ]
     x, y = zip(*[base_map(lon, lat) for (lat, lon) in lat_lons])
 
@@ -116,26 +115,28 @@ def write_result(tag, coord, city_id):
     with con:
         if coord.lat is not None and coord.lon is not None:
             cur = con.cursor()
-            INSERT = """INSERT INTO results_nonorm
-            (tag_id, city_id, lat, lon)
+            INSERT = """INSERT INTO results
+            (tag_id, city_id, photo_id, lat, lon)
             VALUES
             ({tag_id},{city_id},{lat},{lon});
             """.format(
-                    tag_id=int(str(tag_id)),
-                    city_id=int(str(city_id)),
-                    lat=float(str(coord.lat)),
-                    lon=float(str(coord.lon)),
+                    tag_id=tag_id,
+                    city_id=city_id,
+                    lat=coord.lat,
+                    lon=coord.lon,
                     )
         else:
-            cur = con.cursor()
-            INSERT = """INSERT INTO results_nonorm
-            (tag_id, city_id, lat, lon)
+            INSERT = """INSERT INTO results
+            (tag_id, city_id, photo_id, lat, lon)
             VALUES
             ({tag_id},{city_id},NULL,NULL);
             """.format(
-                    tag_id=int(str(tag_id)),
-                    city_id=int(str(city_id)),
+                    tag_id=tag_id,
+                    city_id=city_id,
+                    lat=coord.lat,
+                    lon=coord.lon,
                     )
+
         try:
             cur.execute(INSERT)
         except ProgrammingError:
@@ -262,7 +263,7 @@ def save_plot(base_map, tag, photo_locations, best_coord, cluster_points=None, h
     plt.close('all')
 
 
-def find_best_location(tag, city_id, tag_graph, base_map):
+def find_best_location(tag, city_id, tag_graph, base_map, all_kde):
     from time import time as t
     start = t()
     # Check if we already have a result
