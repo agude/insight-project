@@ -243,20 +243,21 @@ def get_tags_to_run_on(city_id, graph_tags):
         return tags_to_run_on
 
 
-def get_results_from_tag(tag, con=con_read):
+def get_results_from_tag(tag, city_id, con=con_read):
     with con:
         cur = con.cursor()
 
         # Get all tags
-        SELECT = """SELECT r.lat, r.lon, r.photo_id
+        SELECT = """SELECT r.lat, r.lon
         FROM results r
         LEFT JOIN tags t ON t.tag_id = r.tag_id
-        WHERE t.tag = %s;
+        WHERE t.tag = %s
+        AND r.city_id = %s
         """
-        cur.execute(SELECT, tag)
+        cur.execute(SELECT, (tag, city_id))
         rows = cur.fetchall()
         cur.close()
-        lat, lon, pid = rows[0]
+        lat, lon = rows[0]
         coord = Coordinate(lat, lon)
 
         return coord

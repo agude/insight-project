@@ -74,15 +74,32 @@ def make_normalized_kde(photo_kde, all_kde, base_map):
 
 def hand_coded_seed_points(base_map):
     lat_lons = [
-            (37.78561, -122.40774), # Downtown SF
-            (37.76824, -122.48156), # Golden Gate Park
-            (37.79850, -122.46748), # Persidio
-            (37.83308, -122.48945), # Marin Headlands
-            (37.86073, -122.42954), # Angel Island
-            (37.82641, -122.42251), # Alcatraz
-            (37.82444, -122.37174), # Treasure Island
-            (37.80396, -122.25865), # Lake Merit
-            (37.87175, -122.26123), # UC Berkeley
+            #(37.78561, -122.40774), # Downtown SF
+            #(37.76824, -122.48156), # Golden Gate Park
+            #(37.79850, -122.46748), # Persidio
+            #(37.83308, -122.48945), # Marin Headlands
+            #(37.86073, -122.42954), # Angel Island
+            #(37.82641, -122.42251), # Alcatraz
+            #(37.82444, -122.37174), # Treasure Island
+            #(37.80396, -122.25865), # Lake Merit
+            #(37.87175, -122.26123), # UC Berkeley
+            (47.60621, -122.33207), # Downtown Seattle
+            (47.61317, -122.19474), # Downtown Bellevue
+            (47.56431, -122.22358), # Mercer Island
+            (47.56431, -122.22358), # Seward Park
+            (47.57185, -122.38795), # West Seattle
+            (47.65725, -122.30812), # University of Washington
+            (47.66130, -122.41593), # Discovery Park
+            (47.64705, -122.54570), # Bainbridge Islnd
+            (47.53813, -122.49481), # Blake Island
+            (47.50312, -122.46803), # Vashon Island
+            (47.50695, -122.52004), # WA 160 Ferry
+            (47.47882, -122.21586), # Renton
+            (47.66890, -122.34748), # Woodland Park
+            (47.55230, -122.15384), # Newcastle
+            (47.64213, -122.04638), # Evan's Creek
+            (47.53171, -122.30323), # Boeing Field
+            (47.64213, -122.04638), # Jefferson Park
             ]
     x, y = zip(*[base_map(lon, lat) for (lat, lon) in lat_lons])
 
@@ -116,7 +133,7 @@ def write_result(tag, coord, city_id):
         if coord.lat is not None and coord.lon is not None:
             cur = con.cursor()
             INSERT = """INSERT INTO results
-            (tag_id, city_id, photo_id, lat, lon)
+            (tag_id, city_id, lat, lon)
             VALUES
             ({tag_id},{city_id},{lat},{lon});
             """.format(
@@ -127,14 +144,12 @@ def write_result(tag, coord, city_id):
                     )
         else:
             INSERT = """INSERT INTO results
-            (tag_id, city_id, photo_id, lat, lon)
+            (tag_id, city_id, lat, lon)
             VALUES
             ({tag_id},{city_id},NULL,NULL);
             """.format(
                     tag_id=tag_id,
                     city_id=city_id,
-                    lat=coord.lat,
-                    lon=coord.lon,
                     )
 
         try:
@@ -298,25 +313,25 @@ def find_best_location(tag, city_id, tag_graph, base_map, all_kde):
         write_result(tag, good_photo_locations[0], city_id)
         save_plot(base_map, tag, good_photo_locations, good_photo_locations[0])
         return
-    else: 
+    else:
         photo_kde = helpers.get_xy_kde(good_photo_locations)
         normalized_kde = make_normalized_kde(photo_kde, all_kde, base_map)
 
-    #print "Done getting photos in", t() - start, "seconds"
-    #start = t()
+    print "Done getting photos in", t() - start, "seconds"
+    start = t()
 
     # Cluster the points to seed minimiation
     #cluster_points = get_fit_starts(good_photo_locations)
     cluster_points = hand_coded_seed_points(base_map)
 
-    #print "Done clustering in", t() - start, "seconds"
-    #start = t()
+    print "Done clustering in", t() - start, "seconds"
+    start = t()
 
     # Find the minimum of normalized KDE starting from the cluster locations
-    best_coord = find_the_minimum(good_photo_locations, normalized_kde, cluster_points)
+    best_coord = find_the_minimum(good_photo_locations, normalized_kde, cluster_points, base_map)
 
-    #print "Done fitting in", t() - start, "seconds"
-    #start = t()
+    print "Done fitting in", t() - start, "seconds"
+    start = t()
 
     # Writing to the database
     write_result(tag, best_coord, city_id)
@@ -325,5 +340,5 @@ def find_best_location(tag, city_id, tag_graph, base_map, all_kde):
     heat_map = make_heat_map(good_photo_locations, normalized_kde)
     save_plot(base_map, tag, good_photo_locations, best_coord, cluster_points, heat_map)
 
-    #print "Done with plotting in", t() - start, "seconds"
-    #start = t()
+    print "Done with plotting in", t() - start, "seconds"
+    start = t()

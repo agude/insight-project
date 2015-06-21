@@ -11,14 +11,14 @@ import numpy as np
 
 
 # Hardcode the city
-CITY_ID = 1
-DISTANCE_CUT = 25
+CITY_ID = 2 # Seattle
+DISTANCE_CUT = 15
 
 # Number of jobs to run at once
 NJOBS = int(mp.cpu_count())
 
 # Load the tag relation graph
-tag_graph = pk.load(open("../pickles/sf_tag_graph.pickle", "rb"))
+tag_graph = pk.load(open("../pickles/seattle_tag_graph.pickle", "rb"))
 graph_tags = set(tag_graph.nodes())
 
 # Set up the map
